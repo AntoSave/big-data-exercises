@@ -11,8 +11,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.hadoop.mapreduce.Reducer;
+
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -25,10 +28,9 @@ import org.apache.hadoop.io.Text;
  *         Reducer<k2,v2,k3,v3>
  * 
  */
-public class ReducerTopK extends Reducer<NullWritable, PairWritable<Text, DoubleWritable>, Text, DoubleWritable> {
-    private List<PairWritable<Text, DoubleWritable>> globalTopK;
+public class ReducerTopK extends Reducer<NullWritable, PairWritable<Text, DoubleWritable>, NullWritable, PairWritable<Text, DoubleWritable>> {
+    private LinkedList<PairWritable<Text, DoubleWritable>> globalTopK;
     private int k;
-    private final Comparator<PairWritable<Text, DoubleWritable>> comparator = new MyComparator();
     
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
@@ -39,32 +41,17 @@ public class ReducerTopK extends Reducer<NullWritable, PairWritable<Text, Double
     
     public void reduce(NullWritable key, Iterable<PairWritable<Text, DoubleWritable>> localTopK, Context context) throws IOException, InterruptedException {
         for(PairWritable<Text, DoubleWritable> pair: localTopK){
-            int i;
-            // If globalTopK has an element, first element is min. If pair < min pair, ignore pair.
-            if(globalTopK.size()>0 && comparator.compare(pair, globalTopK.get(0))<0){
-                continue;
-            }
-            // Insert pair in order
-            for(i=0; i < globalTopK.size() && comparator.compare(globalTopK.get(i), pair) <= 0;i++);
-            globalTopK.add(i, pair);
-            // Remove min if size > k
-            if(globalTopK.size()>k)
-                globalTopK.remove(0);
+            globalTopK.add(pair);
         }
-    }
-
-
-    @Override
-    protected void cleanup(Context context) throws IOException, InterruptedException {
-        /*ListIterator<PairWritable<Text, DoubleWritable>> iterator = globalTopK.listIterator(globalTopK.size());
-        while(iterator.hasPrevious()){
+        globalTopK.sort(new MyComparator());
+        ListIterator<PairWritable<Text, DoubleWritable>> iterator = globalTopK.listIterator(globalTopK.size());
+        int i = 0;
+        while(iterator.hasPrevious() && i<k){
             PairWritable<Text, DoubleWritable> pair = iterator.previous();
-            context.write(pair.getFirst(), pair.getSecond());
-        }*/
-        for(PairWritable<Text, DoubleWritable> pair: globalTopK){
-            context.write(pair.getFirst(), pair.getSecond());
+            context.write(NullWritable.get(), pair);
+            context.write(NullWritable.get(), new PairWritable<Text,DoubleWritable>(new Text(Integer.toString(i)), new DoubleWritable(k)));
+            i++;
         }
-        super.cleanup(context);
     }
 
 }

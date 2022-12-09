@@ -1,4 +1,4 @@
-package it.unisa.hpc.hadoop.homework4;
+package it.unisa.hpc.hadoop.homework6;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -8,6 +8,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
@@ -17,7 +18,7 @@ import kotlin.Pair;
  *
  * @author alangella
  */
-public class DriverTopK {
+public class DriverFriends {
 
     /**
      * @param args the command line arguments
@@ -28,7 +29,7 @@ public class DriverTopK {
         int numberOfReducers = 1;
 
         if(args.length != 3){
-            System.err.println("Invalid arguments.\nUsage:\thadoop jar [jarfile] [inputFile] [outputDir] [k]");
+            System.err.println("Invalid arguments.\nUsage:\thadoop jar [jarfile] [inputFile] [outputDir] [username]");
             return;
         }
 
@@ -36,12 +37,10 @@ public class DriverTopK {
         inputPath = new Path(args[0]);
         outputPath = new Path(args[1]);
         Configuration conf = new Configuration();
-        conf.setInt("k",Integer.parseInt(args[2]));
+        conf.set("user",args[2]);
+        conf.set("key.value.separator.in.input.line", ","); 
         // Define a new job
-        Job job = Job.getInstance(conf, "inverted index");
-
-        PairWritable.aClass = Text.class;
-        PairWritable.bClass = DoubleWritable.class;
+        Job job = Job.getInstance(conf, "friends");
 
         // Set path of the input file and output folder for the job
         FileInputFormat.addInputPath(job, inputPath);
@@ -52,18 +51,18 @@ public class DriverTopK {
         job.setOutputFormatClass(TextOutputFormat.class);
 
         // Set the driver, mapper and reducer classes
-        job.setJarByClass(DriverTopK.class);
-        job.setMapperClass(MapperTopK.class);
-        job.setReducerClass(ReducerTopK.class);
+        job.setJarByClass(DriverFriends.class);
+        job.setMapperClass(MapperFriends.class);
+        job.setReducerClass(ReducerFriends.class);
         //job.setCombinerClass(ReducerTopK.class);
         
         // Set mapper output key and value classes
         job.setMapOutputKeyClass(NullWritable.class);
-        job.setMapOutputValueClass(PairWritable.class);
+        job.setMapOutputValueClass(Text.class);
 
         // Set reducer output key and value classes
         job.setOutputKeyClass(NullWritable.class); //The string representing the date
-        job.setOutputValueClass(PairWritable.class); //The income
+        job.setOutputValueClass(Text.class); //The income
         
         // Set the number of reducers
         job.setNumReduceTasks(numberOfReducers);

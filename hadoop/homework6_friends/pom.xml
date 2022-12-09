@@ -5,10 +5,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>it.unisa.hpc.hadoop</groupId>
-  <artifactId>homework5</artifactId>
+  <artifactId>homework6</artifactId>
   <version>1.0</version>
 
-  <name>homework5</name>
+  <name>homework6</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -63,7 +63,7 @@
             <archive>
               <manifest>
                 <addClasspath>true</addClasspath>
-                <mainClass>it.unisa.hpc.hadoop.homework5.DriverWordIntDict</mainClass>
+                <mainClass>it.unisa.hpc.hadoop.homework6.DriverFriends</mainClass>
               </manifest>
             </archive>
           </configuration>
@@ -81,13 +81,6 @@
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.8.0</version>
-          <configuration>
-            <archive>
-              <manifest>
-                <mainClass>it.unisa.hpc.hadoop.exercise1.DriverBigData</mainClass>
-              </manifest>
-            </archive>
-          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>

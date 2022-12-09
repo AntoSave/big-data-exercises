@@ -39,7 +39,7 @@ public class DriverWordIntDict {
         Configuration conf = new Configuration();
         
         // Define a new job
-        Job job = Job.getInstance(conf, "inverted index");
+        Job job = Job.getInstance(conf, "wordIntDict");
 
         // Set path of the input file and output folder for the job
         FileInputFormat.addInputPath(job, inputPath);

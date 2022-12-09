@@ -42,7 +42,7 @@ public class MapperTopK extends Mapper<Text, Text, NullWritable, PairWritable<Te
     @Override
     public void map(Text date, Text income_t, Context context) {
         double income = Double.parseDouble(income_t.toString());
-        PairWritable<Text, DoubleWritable> pair = new PairWritable<Text,DoubleWritable>(date, new DoubleWritable(income));
+        PairWritable<Text, DoubleWritable> pair = new PairWritable<Text,DoubleWritable>(new Text(date), new DoubleWritable(income));
         localTopK.add(pair);
         if(localTopK.size()>k){
             PairWritable<Text, DoubleWritable> min = localTopK.stream().min(comparator).get();

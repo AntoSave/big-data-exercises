@@ -47,5 +47,10 @@ public class PairWritable<T extends Writable, S extends Writable> implements Wri
         a.readFields(in);
         b.readFields(in);
     }
+
+    @Override
+    public String toString(){
+        return "(" + a.toString() + " " + b.toString() + ")";
+    }
     
 }
