@@ -7,16 +7,15 @@ import java.util.Comparator;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 
-public class MyComparator implements Comparator<PairWritable<Text, DoubleWritable>> {
+public class MyComparator implements Comparator<DateIncomeWritable> {
     @Override
-    public int compare(PairWritable<Text, DoubleWritable> o1, PairWritable<Text, DoubleWritable> o2) {
-        int result = o1.getSecond().compareTo(o1.getSecond());
-        if(result == 0){ //If incomes are equal we prefer the first date among the two
+    public int compare(DateIncomeWritable o1, DateIncomeWritable o2) {
+        if(o1.getIncome() == o2.getIncome()){ //If incomes are equal we prefer the first date among the two
             DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-            LocalDate d1 = LocalDate.parse(o1.getFirst().toString(), df);
-            LocalDate d2 = LocalDate.parse(o1.getFirst().toString(), df);
+            LocalDate d1 = LocalDate.parse(o1.getDate(), df);
+            LocalDate d2 = LocalDate.parse(o2.getDate(), df);
             return -d1.compareTo(d2); //- because the smaller date must be taken
         }
-        return result;
+        return o1.getIncome()>o2.getIncome()?1:-1;
     }
 }

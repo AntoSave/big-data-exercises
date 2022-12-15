@@ -28,8 +28,8 @@ import org.apache.hadoop.io.Text;
  *         Reducer<k2,v2,k3,v3>
  * 
  */
-public class ReducerTopK extends Reducer<NullWritable, PairWritable<Text, DoubleWritable>, NullWritable, PairWritable<Text, DoubleWritable>> {
-    private LinkedList<PairWritable<Text, DoubleWritable>> globalTopK;
+public class ReducerTopK extends Reducer<NullWritable, DateIncomeWritable, NullWritable, DateIncomeWritable> {
+    private LinkedList<DateIncomeWritable> globalTopK;
     private int k;
     
     @Override
@@ -39,17 +39,14 @@ public class ReducerTopK extends Reducer<NullWritable, PairWritable<Text, Double
         k = context.getConfiguration().getInt("k", 3);
     }
     
-    public void reduce(NullWritable key, Iterable<PairWritable<Text, DoubleWritable>> localTopK, Context context) throws IOException, InterruptedException {
-        for(PairWritable<Text, DoubleWritable> pair: localTopK){
+    public void reduce(NullWritable key, Iterable<DateIncomeWritable> localTopK, Context context) throws IOException, InterruptedException {
+        for(DateIncomeWritable pair: localTopK){
             globalTopK.add(pair);
         }
         globalTopK.sort(new MyComparator());
-        ListIterator<PairWritable<Text, DoubleWritable>> iterator = globalTopK.listIterator(globalTopK.size());
         int i = 0;
-        while(iterator.hasPrevious() && i<k){
-            PairWritable<Text, DoubleWritable> pair = iterator.previous();
-            context.write(NullWritable.get(), pair);
-            context.write(NullWritable.get(), new PairWritable<Text,DoubleWritable>(new Text(Integer.toString(i)), new DoubleWritable(k)));
+        while(i<k){
+            context.write(NullWritable.get(), globalTopK.get(globalTopK.size()-i));
             i++;
         }
     }

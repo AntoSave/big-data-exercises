@@ -26,11 +26,11 @@ import java.util.StringTokenizer;
  *         map: (k1, v1) -> [(k2,v2)]
  *         Mapper <k1, v1, k2, v2>
  */
-public class MapperTopK extends Mapper<Text, Text, NullWritable, PairWritable<Text, DoubleWritable>> {
-    private LinkedList<PairWritable<Text, DoubleWritable>> localTopK;
+public class MapperTopK extends Mapper<Text, Text, NullWritable, DateIncomeWritable> {
+    private LinkedList<DateIncomeWritable> localTopK;
     
     private int k;
-    private final Comparator<PairWritable<Text, DoubleWritable>> comparator = new MyComparator();
+    private final Comparator<DateIncomeWritable> comparator = new MyComparator();
 
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
@@ -42,17 +42,19 @@ public class MapperTopK extends Mapper<Text, Text, NullWritable, PairWritable<Te
     @Override
     public void map(Text date, Text income_t, Context context) {
         double income = Double.parseDouble(income_t.toString());
-        PairWritable<Text, DoubleWritable> pair = new PairWritable<Text,DoubleWritable>(new Text(date), new DoubleWritable(income));
+        DateIncomeWritable pair = new DateIncomeWritable();
+        pair.setDate(date.toString());
+        pair.setIncome(income);
         localTopK.add(pair);
+        localTopK.sort(comparator);
         if(localTopK.size()>k){
-            PairWritable<Text, DoubleWritable> min = localTopK.stream().min(comparator).get();
-            localTopK.remove(min);
+            localTopK.remove(0);
         }
     }
 
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException{
-        for(PairWritable<Text, DoubleWritable> pair: localTopK){
+        for(DateIncomeWritable pair: localTopK){
             context.write(NullWritable.get(), pair);
         }
         super.cleanup(context);
