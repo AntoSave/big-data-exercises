@@ -41,7 +41,9 @@ public class ReducerTopK extends Reducer<NullWritable, PairWritable<Text, Double
     
     public void reduce(NullWritable key, Iterable<PairWritable<Text, DoubleWritable>> localTopK, Context context) throws IOException, InterruptedException {
         for(PairWritable<Text, DoubleWritable> pair: localTopK){
-            globalTopK.add(pair);
+            globalTopK.add(pair);// !Probelma quando aggiungo alla struttura dati pair perché  pair non è immutabile.
+            //Devo creare una copia di pair ogni volta!
+            //Vedi note esercizio su moodle.
         }
         globalTopK.sort(new MyComparator());
         ListIterator<PairWritable<Text, DoubleWritable>> iterator = globalTopK.listIterator(globalTopK.size());
