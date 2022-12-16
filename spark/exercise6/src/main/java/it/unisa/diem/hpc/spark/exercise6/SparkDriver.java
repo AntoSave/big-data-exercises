@@ -2,13 +2,16 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
  */
-package it.unisa.diem.hpc.spark.exercise4;
+package it.unisa.diem.hpc.spark.exercise6;
 
 import java.util.List;
 
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+
+import scala.Tuple2;
 
 public class SparkDriver {
 
@@ -26,13 +29,10 @@ public class SparkDriver {
         // Build an RDD of Strings from the input textual file 
         // Each element of the RDD is a line of the input file 
         JavaRDD<String> lines = sc.textFile(inputFile);
-        
-        JavaRDD<String> stringValues = lines.map(line -> line.split(",")[2]);
-        JavaRDD<Double> values = stringValues.map(Double::parseDouble);
-        
-        List<Double> result = values.top(3);
-        result.forEach(System.out::println);
-        System.out.println(result);
+        JavaRDD<Double> values = lines.map(line -> line.split(",")[2]).map(Double::parseDouble);
+        long count = values.count();
+        Double sum = values.reduce((a,b) -> a+b);
+        System.out.println(sum/count);
         
         //Close the Spark Context
         sc.close();

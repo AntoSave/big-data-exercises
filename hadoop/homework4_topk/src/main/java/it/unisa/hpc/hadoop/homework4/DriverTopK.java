@@ -40,9 +40,6 @@ public class DriverTopK {
         // Define a new job
         Job job = Job.getInstance(conf, "inverted index");
 
-        PairWritable.aClass = Text.class;
-        PairWritable.bClass = DoubleWritable.class;
-
         // Set path of the input file and output folder for the job
         FileInputFormat.addInputPath(job, inputPath);
         FileOutputFormat.setOutputPath(job, outputPath);
@@ -59,11 +56,11 @@ public class DriverTopK {
         
         // Set mapper output key and value classes
         job.setMapOutputKeyClass(NullWritable.class);
-        job.setMapOutputValueClass(PairWritable.class);
+        job.setMapOutputValueClass(DateIncomeWritable.class);
 
         // Set reducer output key and value classes
         job.setOutputKeyClass(NullWritable.class); //The string representing the date
-        job.setOutputValueClass(PairWritable.class); //The income
+        job.setOutputValueClass(DateIncomeWritable.class); //The income
         
         // Set the number of reducers
         job.setNumReduceTasks(numberOfReducers);
