@@ -2,9 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
  */
-package it.unisa.diem.hpc.spark.exercise6;
+package it.unisa.diem.hpc.spark.exercise8;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -20,7 +21,8 @@ public class SparkDriver {
      */
     public static void main(String[] args) {
         String inputFile = args[0];
-        String outputPath = args[1];
+        //String outputPath = args[1];
+        
         // Create a configuration object and set the name of the application 
         SparkConf conf = new SparkConf().setAppName("Spark Ex4");
         // Create a Spark Context object
@@ -29,13 +31,15 @@ public class SparkDriver {
         // Build an RDD of Strings from the input textual file 
         // Each element of the RDD is a line of the input file 
         JavaRDD<String> lines = sc.textFile(inputFile);
-        JavaRDD<Double> values = lines.map(line -> line.split(",")[2]).map(Double::parseDouble);
-
-        
-        long count = values.count();
-        Double sum = values.reduce((a,b) -> a+b);
-        System.out.println(sum/count);
-        
+        JavaPairRDD<String, Double> sensorValue = lines.mapToPair(line -> {
+            String split[] = line.split(",");
+            return new Tuple2<String, Double>(split[0], Double.parseDouble(split[2]));
+        });
+        JavaPairRDD<String, Double> filteredSensorValue = sensorValue.filter(t -> t._2() >= 50.);
+        JavaPairRDD<String, Integer> sensorOnePair = filteredSensorValue.mapValues(v -> 1);
+        JavaPairRDD<String, Integer> sensorNumber = sensorOnePair.reduceByKey((a,b)->a+b);
+        JavaPairRDD<String, Integer> result = sensorNumber.filter(t -> t._2() >= 2);
+        System.out.println(result.collect());
         //Close the Spark Context
         sc.close();
     }

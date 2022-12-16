@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
  */
-package it.unisa.diem.hpc.spark.exercise6;
+package it.unisa.diem.hpc.spark.exercise7;
 
 import java.util.List;
 
@@ -22,20 +22,20 @@ public class SparkDriver {
         String inputFile = args[0];
         String outputPath = args[1];
         // Create a configuration object and set the name of the application 
-        SparkConf conf = new SparkConf().setAppName("Spark Ex4");
+        SparkConf conf = new SparkConf().setAppName("Spark Ex7");
         // Create a Spark Context object
         JavaSparkContext sc = new JavaSparkContext(conf);
         
         // Build an RDD of Strings from the input textual file 
         // Each element of the RDD is a line of the input file 
         JavaRDD<String> lines = sc.textFile(inputFile);
-        JavaRDD<Double> values = lines.map(line -> line.split(",")[2]).map(Double::parseDouble);
+        JavaPairRDD<String, Double> pairs = lines.mapToPair(line -> {
+            String[] split = line.split(",");
+            return new Tuple2<>(split[0], Double.parseDouble(split[2]));
+        });
 
-        
-        long count = values.count();
-        Double sum = values.reduce((a,b) -> a+b);
-        System.out.println(sum/count);
-        
+        JavaPairRDD<String, Double> result = pairs.reduceByKey(Double::max);
+        result.saveAsTextFile(outputPath);
         //Close the Spark Context
         sc.close();
     }
