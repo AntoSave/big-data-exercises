@@ -21,25 +21,23 @@ public class SparkDriver {
      */
     public static void main(String[] args) {
         String inputFile = args[0];
-        //String outputPath = args[1];
+        String outputPath = args[1];
         
         // Create a configuration object and set the name of the application 
-        SparkConf conf = new SparkConf().setAppName("Spark Ex4");
+        SparkConf conf = new SparkConf().setAppName("Spark Ex9");
         // Create a Spark Context object
         JavaSparkContext sc = new JavaSparkContext(conf);
         
         // Build an RDD of Strings from the input textual file 
         // Each element of the RDD is a line of the input file 
         JavaRDD<String> lines = sc.textFile(inputFile);
-        JavaPairRDD<String, Double> sensorValue = lines.mapToPair(line -> {
+        JavaPairRDD<String, Tuple2<String, Double>> sensorDateValuePair = lines.mapToPair(line -> {
             String split[] = line.split(",");
-            return new Tuple2<String, Double>(split[0], Double.parseDouble(split[2]));
+            return new Tuple2<>(split[0], new Tuple2<>(split[1], Double.parseDouble(split[2])));
         });
-        JavaPairRDD<String, Double> filteredSensorValue = sensorValue.filter(t -> t._2() >= 50.);
-        JavaPairRDD<String, Integer> sensorOnePair = filteredSensorValue.mapValues(v -> 1);
-        JavaPairRDD<String, Integer> sensorNumber = sensorOnePair.reduceByKey((a,b)->a+b);
-        JavaPairRDD<String, Integer> result = sensorNumber.filter(t -> t._2() >= 2);
-        System.out.println(result.collect());
+        JavaPairRDD<String, String> filteredSensorDatePairs = sensorDateValuePair.filter(t -> t._2()._2() > 50).mapToPair(t -> new Tuple2<>(t._1(), t._2()._1()));
+        JavaPairRDD<String, Iterable<String>> result = filteredSensorDatePairs.groupByKey();
+        result.saveAsTextFile(outputPath);
         //Close the Spark Context
         sc.close();
     }
